@@ -1,6 +1,6 @@
 module MRA.Combinators where
 
-import Prelude ((>>>), (<$>), (+), (-), eq, id)
+import Prelude ((>>>), (<$>), (+), (-), eq, identity)
 
 import Data.OrdMap as M
 import Data.Maybe(fromMaybe)
@@ -13,12 +13,12 @@ import MRA.Core (Dataset, autojoin_d, lshift_d, map_d, nest_d, swap_d, reduce_d,
 -- | Fractures maps and arrays, no matter how deeply nested, into path
 -- | segments that terminate in leaves, stored in an array.
 fracture :: Dataset -> Dataset
-fracture = map_d id -- TODO
+fracture = map_d identity -- TODO
 
 -- | Inverse of `fracture`.
--- | `fracture >>> unfracture = id`
+-- | `fracture >>> unfracture = identity`
 unfracture :: Dataset -> Dataset
-unfracture = map_d id -- TODO
+unfracture = map_d identity -- TODO
 
 -- | Replicates the next dimension of information.
 replicate :: Dataset -> Dataset

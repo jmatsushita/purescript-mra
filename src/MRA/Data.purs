@@ -1,16 +1,14 @@
 module MRA.Data where
 
-import Prelude (class Eq, class Ord, class Semigroup, class Show, Ordering(GT, LT, EQ), (==), (<$>), (>>>), (<<<), (<>), (<=), ($), (+), (-), compare, map, pure, show)
-
-import Data.Monoid (class Monoid)
 import Data.Accessor (Getter, Accessor(Accessor))
-import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Foldable(foldr, foldl)
-import Data.String(singleton, toCharArray)
-import Data.Tuple(Tuple(..), snd)
-
-import Data.OrdMap as M
+import Data.Foldable (foldr, foldl)
 import Data.List as L
+import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Monoid (class Monoid)
+import Data.OrdMap as M
+import Data.String.CodeUnits (singleton, toCharArray)
+import Data.Tuple (Tuple(..), snd)
+import Prelude (class Eq, class Ord, class Semigroup, class Show, Ordering(GT, LT, EQ), (==), (<$>), (>>>), (<<<), (<>), (<=), ($), (+), (-), compare, map, pure, show)
 
 data Primitive = PrimNull | PrimInt Int | PrimChar Char -- etc
 

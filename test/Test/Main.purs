@@ -6,22 +6,22 @@ module Test.Main where
   import Data.Foldable(foldl)
   import Data.List as L
 
-  import Control.Monad.Eff(Eff)
-  import Control.Monad.Eff.Console(CONSOLE, log)
+  import Effect
+  import Effect.Console
 
   import MRA.Provenance(Provenance(..), (/\), (\/), (>>))
   import MRA.Data(Data(), makeMap, primString, primInt)
   import MRA.Core(Dataset(), dimensionality, literal_d, lshift_d, map_d, project_d, values)
   import MRA.Combinators(count, map_flatten_values, domain)
 
-  type TestResult = forall r. Eff (console :: CONSOLE | r) Unit
+  type TestResult = Effect Unit
 
-  assertEqual :: forall a r. Show a => Eq a => a -> a -> Eff (console :: CONSOLE | r) Unit
+  assertEqual :: forall a. Show a => Eq a => a -> a -> Effect Unit
   assertEqual l r =
     if l == r then log $ "Pass: " <> show l <> " == " <> show r
     else log $ "FAIL: Expected " <> show l <> " but found " <> show r
 
-  assertNotEqual :: forall a r. Show a => Eq a => a -> a -> Eff (console :: CONSOLE | r) Unit
+  assertNotEqual :: forall a. Show a => Eq a => a -> a -> Effect Unit
   assertNotEqual l r =
     if l /= r then log $ "Pass: " <> show l <> " /= " <> show r
     else log $ "FAIL: " <> show l <> " == " <> show r
@@ -96,7 +96,7 @@ module Test.Main where
       assertEqual (projPrimInt4 /\ (projPrimInt3 \/ projPrimInt2)) ((projPrimInt4 /\ projPrimInt3) \/ (projPrimInt4 /\ projPrimInt2))
 
       -- distributivity of sums through seqs
-      assertEqual (projPrimInt4 >> (projPrimInt3 \/ projPrimInt2)) (projPrimInt4 >> projPrimInt3 \/ projPrimInt4 >> projPrimInt2)
+      assertEqual (projPrimInt4 >> (projPrimInt3 \/ projPrimInt2)) ((projPrimInt4 >> projPrimInt3) \/ (projPrimInt4 >> projPrimInt2))
 
       test_join_keys
 
@@ -127,7 +127,7 @@ module Test.Main where
     log "Testing Data"
     test_domain
 
-  main :: forall r. Eff (console :: CONSOLE | r) Unit
+  main :: Effect Unit
   main = do
     test_data
 

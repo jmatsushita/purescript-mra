@@ -53,7 +53,7 @@ keys :: forall k v. (Ord k) => Map k v -> List k
 keys = toList >>> map fst
 
 instance semigroupMap :: (Ord k) => Semigroup (Map k v) where
-  append (Map l) (Map r) = Map { reversed : nub (l.reversed <> r.reversed), values : l.values <> r.values }
+  append (Map l) (Map r) = Map { reversed : nub (l.reversed <> r.reversed), values : M.union l.values r.values }
 
 instance monoidMap :: (Ord k) => Monoid (Map k v) where
   mempty = empty

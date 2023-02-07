@@ -1,6 +1,6 @@
 module Data.Accessor where
 
-import Prelude (class Category, class Semigroupoid, id, const)
+import Prelude (class Category, class Semigroupoid, const, identity)
 
 type Setter s a = s -> a -> s
 type Getter s a = s -> a
@@ -15,7 +15,7 @@ instance semigroupoidAccessor :: Semigroupoid Accessor where
       get' a = getC (getB a)
 
 instance categoryAccessor :: Category Accessor where
-  id = Accessor const id
+  identity = Accessor const identity
 
 xmap :: forall s a b. (b -> a) -> (a -> b) -> Accessor s a -> Accessor s b
 xmap f g (Accessor setter getter) = Accessor setter' getter'

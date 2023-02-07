@@ -20,7 +20,7 @@ module MRA.Provenance
   , unJoinKeys
   ) where
 
-import Prelude (class Eq, class Semigroup, class Show, (<$>), (==), (/=), map, (>>>), (<<<), (<>), (>), ($), bind, eq, id, pure, show, const, discard)
+import Prelude (class Eq, class Semigroup, class Show, (<$>), (==), (/=), map, (>>>), (<<<), (<>), (>), ($), bind, eq, identity, pure, show, const, discard)
 
 import Data.List (List(Nil), length, take, filter, takeWhile, zipWith)
 import Data.Tuple (Tuple(Tuple), fst, snd)
@@ -89,15 +89,15 @@ makeTwo :: DataAccessor -> Data -> Data -> Data
 makeTwo d l r = set d emptyMap (set _Left (set _Right emptyMap r) l)
 
 valueJoin :: JoinKeys
-valueJoin = JoinKeys (pure { left : id :: DataGetter, right : id :: DataGetter })
+valueJoin = JoinKeys (pure { left : identity :: DataGetter, right : identity :: DataGetter })
 
 joinKeys :: Provenance -> Provenance -> JoinKeys
 joinKeys     (Nada     ) r               = mempty
 joinKeys l                   (Nada     ) = mempty
 joinKeys     (Value    )     (Value    ) = valueJoin
 joinKeys     (Proj   d1)     (Proj   d2) = if d1 == d2 then valueJoin else mempty
-joinKeys     (Value    )     (Proj   d2) = JoinKeys (pure { left : id :: DataGetter, right : const d2 })
-joinKeys     (Proj   d1)     (Value    ) = JoinKeys (pure { left : const d1, right : id :: DataGetter })
+joinKeys     (Value    )     (Proj   d2) = JoinKeys (pure { left : identity :: DataGetter, right : const d2 })
+joinKeys     (Proj   d1)     (Value    ) = JoinKeys (pure { left : const d1, right : identity :: DataGetter })
 joinKeys l @ (Both  _ _) r               = joinBoths  l r
 joinKeys l               r @ (Both  _ _) = joinBoths  l r
 joinKeys l @ (OneOf _ _) r               = joinOneOfs l r
@@ -135,7 +135,7 @@ joinThens l r = JoinKeys do
   pure { left : fst left >>> key.left, right : fst right >>> key.right }
   where
     longestPrefix :: forall a. (Eq a) => List a -> List a -> Int
-    longestPrefix l' r' = length <<< takeWhile id $ zipWith eq l' r'
+    longestPrefix l' r' = length <<< takeWhile identity $ zipWith eq l' r'
 
 type Alternatives a = List a
 
@@ -156,7 +156,7 @@ flattenBoth (Both  l r) =
     r' <- flattenBoth r
     pure $ nest0 (get _Both >>> get _Left) l' <> nest0 (get _Both >>> get _Right) r'
 flattenBoth (OneOf l r) = nest (get _OneOf >>> get _Left) (flattenBoth l) <> nest (get _OneOf >>> get _Right) (flattenBoth r)
-flattenBoth v = pure (pure (Tuple id v))
+flattenBoth v = pure (pure (Tuple identity v))
 
 -- | Flattens sequences, correctly handling the distributivity of sums.
 -- | The result is a sum (Alternatives) of the flattened terms in the sequence.
@@ -166,7 +166,7 @@ flattenThen (Then l r) = do
   r' <- flattenThen r
   pure $ nest0 (get _Then >>> get _Left) l' <> nest0 (get _Then >>> get _Right) r'
 flattenThen (OneOf l r) = nest (get _OneOf >>> get _Left) (flattenThen l) <> nest (get _OneOf >>> get _Right) (flattenThen r)
-flattenThen v = pure (pure (Tuple id v))
+flattenThen v = pure (pure (Tuple identity v))
 
 -- | Flattens sums, correctly handling the distributivity of sums.
 -- | The result is a sum (Alternatives) of the flattened terms.
@@ -174,7 +174,7 @@ flattenOneOf :: Provenance -> Alternatives (Tuple DataGetter Provenance)
 flattenOneOf (Both  l r) = nest0 (get _Both  >>> get _Left) (flattenOneOf l) <> nest0 (get _Both  >>> get _Right) (flattenOneOf r)
 flattenOneOf (Then  l r) = nest0 (get _Then  >>> get _Left) (flattenOneOf l) <> nest0 (get _Then  >>> get _Right) (flattenOneOf r)
 flattenOneOf (OneOf l r) = nest0 (get _OneOf >>> get _Left) (flattenOneOf l) <> nest0 (get _OneOf >>> get _Right) (flattenOneOf r)
-flattenOneOf v = pure (Tuple id v)
+flattenOneOf v = pure (Tuple identity v)
 
 nubNadas :: List Provenance -> List Provenance
 nubNadas = filter ((/=) Nada)

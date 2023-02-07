@@ -14,7 +14,7 @@ import Data.Monoid(class Monoid, mempty)
 newtype Set a = Set (L.List a)
 
 toSet :: forall f a. Foldable f => Eq a => f a -> Set a
-toSet = Set <<< L.nub <<< foldr L.Cons L.Nil
+toSet = Set <<< L.nubEq <<< foldr L.Cons L.Nil
 
 toList :: forall a. Set a -> L.List a
 toList (Set v) = v

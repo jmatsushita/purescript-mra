@@ -14,7 +14,7 @@ module MRA.Core
   , values
   ) where
 
-import Prelude (class Ord, class Show, (>>=), (<$>), (>>>), (<<<), (<*>), (<>), ($), (-), (>), (<), bind, flip, id, pure, map, show)
+import Prelude (class Ord, class Show, (>>=), (<$>), (>>>), (<<<), (<*>), (<>), ($), (-), (>), (<), bind, flip, identity, pure, map, show)
 
 import Data.List (List(Nil, Cons), length, (..), zipWith, drop, take, (!!), filter, reverse, updateAt)
 import Data.OrdMap as M
@@ -37,7 +37,7 @@ dimensionality (Dataset r) = length r.dims
 
 -- | Applies a 1-to-1 value transformation over a dataset.
 map_d :: (Data -> Data) -> Dataset -> Dataset
-map_d f (Dataset r) = Dataset $ r { values = bimapIdentityValue id f r.values }
+map_d f (Dataset r) = Dataset $ r { values = bimapIdentityValue identity f r.values }
 
 -- | Filters a dataset based on a boolean predicate applied to the values.
 filter_d :: (Data -> Boolean) -> Dataset -> Dataset
@@ -101,15 +101,15 @@ cross_d f (Dataset l) (Dataset r) =
   Dataset { values : do
     left  <- l.values
     right <- r.values
-    let i = zipBackwardsWithPadding makeBoth id id (get _Identity left) (get _Identity right)
+    let i = zipBackwardsWithPadding makeBoth identity identity (get _Identity left) (get _Identity right)
     let x = f (get _Value left) (get _Value right)
-    pure $ makeIdentityValue i x, dims : zipBackwardsWithPadding Both id id l.dims r.dims }
+    pure $ makeIdentityValue i x, dims : zipBackwardsWithPadding Both identity identity l.dims r.dims }
 
 -- | Performs a set union of the two datasets.
 union_d :: Dataset -> Dataset -> Dataset
 union_d (Dataset l) (Dataset r) =
   Dataset {
-    values : bimapIdentityValue (map makeOneOfLeft) id l.values <> bimapIdentityValue (map makeOneOfRight) id r.values,
+    values : bimapIdentityValue (map makeOneOfLeft) identity l.values <> bimapIdentityValue (map makeOneOfRight) identity r.values,
     dims   : zipBackwardsWithPadding OneOf (\l -> OneOf l Nada) (\r -> OneOf Nada r) l.dims r.dims }
 
 type JoinMap = M.Map (Set Data) (List Data)
@@ -150,12 +150,12 @@ autojoin_d f (Dataset l) (Dataset r) =
               (flip Tuple Nil <$> leftGrouped) (Tuple Nil <$> rightGrouped))
 
     newDims :: List Provenance
-    newDims = zipBackwardsWithPadding Both id id l.dims r.dims
+    newDims = zipBackwardsWithPadding Both identity identity l.dims r.dims
 
     f' :: Data -> Data -> Data
     f' l r =
       let
-        i  = zipBackwardsWithPadding makeBoth id id (get _Identity l) (get _Identity r)
+        i  = zipBackwardsWithPadding makeBoth identity identity (get _Identity l) (get _Identity r)
         x  = f (get _Value l) (get _Value r)
       in
         makeIdentityValue i x
